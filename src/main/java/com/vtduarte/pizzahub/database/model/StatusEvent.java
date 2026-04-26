@@ -1,5 +1,6 @@
 package com.vtduarte.pizzahub.database.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.vtduarte.pizzahub.database.enums.StatusPedidoEnum;
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,9 +28,17 @@ public class StatusEvent {
     @Column(nullable = false)
     private StatusPedidoEnum statusNovo;
 
-    private LocalDateTime horario = LocalDateTime.now();
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    private LocalDateTime horario;
 
     @ManyToOne
     @JoinColumn(name = "pedido_id")
     private PedidoEntity pedido;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.horario == null) {
+            this.horario = LocalDateTime.now();
+        }
+    }
 }

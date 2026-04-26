@@ -31,8 +31,4 @@ public class ValidationUtils {
         String c = FormatUtils.formatarCep(cep);
         return c.length() == 8;
     }
-
-    public static boolean validarPizza(String nomePizza) {
-        return validarNome(nomePizza);
-    }
 }

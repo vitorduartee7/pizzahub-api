@@ -1,7 +1,7 @@
 package com.vtduarte.pizzahub.controller;
 
-import com.vtduarte.pizzahub.database.model.ClienteEntity;
 import com.vtduarte.pizzahub.dto.requests.ClienteRequestDTO;
+import com.vtduarte.pizzahub.dto.response.ClienteResponseDTO;
 import com.vtduarte.pizzahub.service.ClienteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,29 +19,31 @@ public class ClienteController {
 
     // CREATE
     @PostMapping
-    public ResponseEntity<ClienteEntity> cadastrarCliente(@Valid @RequestBody ClienteRequestDTO dto) {
-        ClienteEntity cliente = clienteService.cadastrarCliente(dto);
-        return ResponseEntity.status(201).body(cliente);
+    public ResponseEntity<ClienteResponseDTO> cadastrarCliente(
+            @Valid @RequestBody ClienteRequestDTO dto
+    ) {
+        return ResponseEntity.status(201)
+                .body(clienteService.cadastrarCliente(dto));
     }
 
     // READ ALL
     @GetMapping
-    public ResponseEntity<List<ClienteEntity>> listarClientes() {
+    public ResponseEntity<List<ClienteResponseDTO>> listarClientes() {
         return ResponseEntity.ok(clienteService.listarClientes());
     }
 
     // READ BY ID
     @GetMapping("/{id}")
-    public ResponseEntity<ClienteEntity> buscarClientePorId(@PathVariable Long id) {
+    public ResponseEntity<ClienteResponseDTO> buscarClientePorId(@PathVariable Long id) {
         return ResponseEntity.ok(clienteService.buscarClientePorId(id));
     }
 
     // UPDATE
     @PutMapping("/{id}")
-    public ResponseEntity<ClienteEntity> atualizarCliente(
+    public ResponseEntity<ClienteResponseDTO> atualizarCliente(
             @PathVariable Long id,
             @Valid @RequestBody ClienteRequestDTO dto) {
-        ClienteEntity clienteAtualizado = clienteService.atualizarCliente(id, dto);
+        ClienteResponseDTO clienteAtualizado = clienteService.atualizarCliente(id, dto);
         return ResponseEntity.ok(clienteAtualizado);
     }
 

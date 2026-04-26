@@ -1,5 +1,6 @@
 package com.vtduarte.pizzahub.database.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.vtduarte.pizzahub.database.enums.StatusPedidoEnum;
 import jakarta.persistence.*;
 import lombok.*;
@@ -23,17 +24,21 @@ public class PedidoEntity {
     @Column(name = "pedido_id")
     private Long id;
 
-    private LocalDateTime dataPedido = LocalDateTime.now();
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    private LocalDateTime dataPedido;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StatusPedidoEnum status;
 
     @Column(nullable = false)
-    private BigDecimal valorTotal;
+    private BigDecimal valorPedido;
 
     @Column(nullable = false)
     private BigDecimal valorEntrega;
+
+    @Column(nullable = false)
+    private BigDecimal valorTotal;
 
     @Column(nullable = false)
     private Integer tempoEstimado;
@@ -48,4 +53,11 @@ public class PedidoEntity {
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("horario ASC")
     private List<StatusEvent> timeline = new ArrayList<>();
+
+    @PrePersist
+    public void prePersist() {
+        if (this.dataPedido == null) {
+            this.dataPedido = LocalDateTime.now();
+        }
+    }
 }

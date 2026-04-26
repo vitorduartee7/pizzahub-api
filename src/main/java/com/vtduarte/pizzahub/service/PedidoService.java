@@ -8,14 +8,18 @@ import com.vtduarte.pizzahub.database.repository.PedidoRepository;
 import com.vtduarte.pizzahub.database.repository.PizzaRepository;
 import com.vtduarte.pizzahub.dto.requests.ItemPedidoRequestDTO;
 import com.vtduarte.pizzahub.dto.requests.PedidoRequestDTO;
+import com.vtduarte.pizzahub.dto.response.PedidoResponseDTO;
 import com.vtduarte.pizzahub.exceptions.BusinessException;
 import com.vtduarte.pizzahub.exceptions.ResourceNotFoundException;
+import com.vtduarte.pizzahub.mapper.PedidoMapper;
 import com.vtduarte.pizzahub.utils.PizzaPrecoUtils;
+import com.vtduarte.pizzahub.utils.TempoPedidoUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +34,7 @@ public class PedidoService {
 
     // CREATE
     @Transactional
-    public PedidoEntity criarPedido(PedidoRequestDTO dto) {
+    public PedidoResponseDTO criarPedido(PedidoRequestDTO dto) {
 
         // Buscar Cliente e Validar Cliente
         ClienteEntity cliente = clienteRepository.findById(dto.getClienteId())
@@ -40,10 +44,20 @@ public class PedidoService {
         PedidoEntity pedido = PedidoEntity.builder()
                 .cliente(cliente)
                 .status(StatusPedidoEnum.CRIADO)
+                .dataPedido(LocalDateTime.now())
+                .itens(new ArrayList<>())
                 .build();
 
+        if (pedido.getTimeline() == null) {
+            pedido.setTimeline(new ArrayList<>());
+        }
+
+        if (pedido.getTimeline() == null) {
+            pedido.setTimeline(new ArrayList<>());
+        }
+
         List<ItemPedidoEntity> itens = new ArrayList<>();
-        BigDecimal total = BigDecimal.ZERO;
+        BigDecimal valorPedido = BigDecimal.ZERO;
 
         // Processar Pedido
         for (ItemPedidoRequestDTO itemDTO : dto.getItens()) {
@@ -75,95 +89,110 @@ public class PedidoService {
 
             // Adicionar Item a Lista de Itens
             itens.add(item);
-
-            total = total.add(subtotal);
+            valorPedido = valorPedido.add(subtotal);
         }
-
-        // Evento inicial
-        StatusEvent eventoInicial = StatusEvent.builder()
-                .statusAntigo(null)
-                .statusNovo(StatusPedidoEnum.CRIADO)
-                .pedido(pedido)
-                .build();
-        pedido.getTimeline().add(eventoInicial);
 
         // Finalizar Pedido
         pedido.setItens(itens);
-        pedido.setValorTotal(total);
+        pedido.setValorPedido(valorPedido);
+        pedido.setValorEntrega(BigDecimal.valueOf(5));
+        pedido.setValorTotal(pedido.getValorPedido().add(pedido.getValorEntrega()));
+        pedido.setTempoEstimado(TempoPedidoUtils.calcularTempo(itens));
 
         // Salvar Pedido
-        pedido = pedidoRepository.save(pedido);
+        PedidoEntity save = pedidoRepository.save(pedido);
         itemPedidoRepository.saveAll(itens);
 
-        return pedido;
+        // Evento inicial
+        StatusEvent eventoInicial = StatusEvent.builder()
+                .statusAntigo(StatusPedidoEnum.CRIADO)
+                .statusNovo(StatusPedidoEnum.CRIADO)
+                .horario(LocalDateTime.now())
+                .pedido(save)
+                .build();
+
+        save.getTimeline().add(eventoInicial);
+
+        return PedidoMapper.toResponse(save);
     }
 
-    // READ PEDIDOS
-    public List<PedidoEntity> listarPedidos() {
-        return pedidoRepository.findAll();
+    // READ ALL
+    public List<PedidoResponseDTO> listarPedidos() {
+        return pedidoRepository.findAll()
+                .stream()
+                .map(PedidoMapper::toResponse)
+                .toList();
     }
 
     // READ BY ID
-    public PedidoEntity buscarPedidoPorId(Long id) {
-        return pedidoRepository.findById(id)
+    public PedidoResponseDTO buscarPedidoPorId(Long id) {
+        PedidoEntity pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
+
+        return PedidoMapper.toResponse(pedido);
     }
 
     // READ BY STATUS
-    public List<PedidoEntity> listarPedidosPorStatus(StatusPedidoEnum status) {
-        return pedidoRepository.findByStatus(status);
+    public List<PedidoResponseDTO> listarPedidosPorStatus(StatusPedidoEnum status) {
+        return pedidoRepository.findByStatus(status)
+                .stream()
+                .map(PedidoMapper::toResponse)
+                .toList();
     }
 
     // READ TIMELINE
     public List<StatusEvent> mostrarTimeline(Long id) {
 
-        // Buscar Pedido
-        PedidoEntity pedido = buscarPedidoPorId(id);
+        PedidoEntity pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
+
+        if (pedido.getTimeline() == null) {
+            return List.of();
+        }
 
         return pedido.getTimeline();
     }
 
     // UPDATE
-    @Transactional
-    public PedidoEntity atualizarStatus(Long pedidoId, StatusPedidoEnum novoStatus) {
+    public PedidoResponseDTO atualizarStatus(Long pedidoId, StatusPedidoEnum novoStatus) {
 
-        // Buscar Pedido
-        PedidoEntity pedido = buscarPedidoPorId(pedidoId);
+        // Buscar Cliente e Validar Cliente
+        PedidoEntity pedido = pedidoRepository.findById(pedidoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
 
-        // Status Atual
-        StatusPedidoEnum statusAntigo = pedido.getStatus();
+        StatusPedidoEnum atual = pedido.getStatus();
 
         // Validar Transição
-        if (!statusAntigo.podeIrPara(novoStatus)) {
-            throw new BusinessException(
-                    "Transição inválida: " + statusAntigo + " → " + novoStatus
-            );
+        if (!atual.podeIrPara(novoStatus)) {
+            throw new BusinessException("Transição inválida: " + atual + " → " + novoStatus);
         }
 
-        // Atualizar Status
         pedido.setStatus(novoStatus);
 
-        // Atualizar Log Status
-        StatusEvent statusEvent = StatusEvent.builder()
-                .statusAntigo(statusAntigo)
+        // Criar Evento
+        StatusEvent evento = StatusEvent.builder()
+                .statusAntigo(atual)
                 .statusNovo(novoStatus)
                 .pedido(pedido)
                 .build();
 
-        // Adicionar no Histórico
-        pedido.getTimeline().add(statusEvent);
+        // Garantir Criação Timeline
+        if (pedido.getTimeline() == null) {
+            pedido.setTimeline(new ArrayList<>());
+        }
 
-        return pedido;
+        pedido.getTimeline().add(evento);
+
+        return PedidoMapper.toResponse(pedido);
     }
 
     // DELETE
     @Transactional
     public void deletarPedido(Long pedidoId) {
 
-        // Buscar Pedido
-        PedidoEntity pedido = buscarPedidoPorId(pedidoId);
+        PedidoEntity pedido = pedidoRepository.findById(pedidoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
 
-        // Deletar Pedido
         pedidoRepository.delete(pedido);
     }
 }

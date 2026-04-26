@@ -3,8 +3,10 @@ package com.vtduarte.pizzahub.service;
 import com.vtduarte.pizzahub.database.model.PizzaEntity;
 import com.vtduarte.pizzahub.database.repository.PizzaRepository;
 import com.vtduarte.pizzahub.dto.requests.PizzaRequestDTO;
+import com.vtduarte.pizzahub.dto.response.PizzaResponseDTO;
 import com.vtduarte.pizzahub.exceptions.BusinessException;
 import com.vtduarte.pizzahub.exceptions.ResourceNotFoundException;
+import com.vtduarte.pizzahub.mapper.PizzaMapper;
 import com.vtduarte.pizzahub.utils.FormatUtils;
 import com.vtduarte.pizzahub.utils.ValidationUtils;
 import jakarta.transaction.Transactional;
@@ -22,7 +24,7 @@ public class PizzaService {
 
     // CREATE
     @Transactional
-    public PizzaEntity cadastrarPizza(PizzaRequestDTO dto) {
+    public PizzaResponseDTO cadastrarPizza(PizzaRequestDTO dto) {
 
         // Formatar
         String nome = FormatUtils.formatarTexto(dto.getNome());
@@ -50,25 +52,33 @@ public class PizzaService {
         pizza.setDescricao(descricao);
         pizza.setDisponivel(true);
 
-        return pizzaRepository.save(pizza);
+        // Salvar Pizza
+        return PizzaMapper.toResponse(pizzaRepository.save(pizza));
     }
 
     // READ ALL
-    public List<PizzaEntity> listarPizzas() {
-        return pizzaRepository.findAll();
+    public List<PizzaResponseDTO> listarPizzas() {
+        return pizzaRepository.findAll()
+                .stream()
+                .map(PizzaMapper::toResponse)
+                .toList();
     }
 
     // READ BY ID
-    public PizzaEntity buscarPizzaPorId(Long id) {
-        return pizzaRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Pizza não encontrada"));
+    public PizzaResponseDTO buscarPizzaPorId(Long id) {
+        PizzaEntity pizza = pizzaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Pizza não encontrado"));
+
+        return PizzaMapper.toResponse(pizza);
     }
 
     // UPDATE
     @Transactional
-    public PizzaEntity atualizarPizza(Long id, PizzaRequestDTO dto) {
+    public PizzaResponseDTO atualizarPizza(Long id, PizzaRequestDTO dto) {
 
         // Buscar Pizza
-        PizzaEntity pizza = buscarPizzaPorId(id);
+        PizzaEntity pizza = pizzaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
 
         // Formatar
         String nome = FormatUtils.formatarTexto(dto.getNome());
@@ -95,7 +105,7 @@ public class PizzaService {
         pizza.setDescricao(descricao);
         pizza.setPrecoBase(dto.getPrecoBase());
 
-        return pizzaRepository.save(pizza);
+        return PizzaMapper.toResponse(pizzaRepository.save(pizza));
     }
 
     // DELETE
@@ -103,7 +113,8 @@ public class PizzaService {
     public void deletarPizza(Long id) {
 
         // Buscar Pizza
-        PizzaEntity pizza = buscarPizzaPorId(id);
+        PizzaEntity pizza = pizzaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Pizza não encontrado"));
 
         // Atualizar Pizza
         pizza.setDisponivel(false);

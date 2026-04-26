@@ -1,7 +1,7 @@
 package com.vtduarte.pizzahub.controller;
 
-import com.vtduarte.pizzahub.database.model.PizzaEntity;
 import com.vtduarte.pizzahub.dto.requests.PizzaRequestDTO;
+import com.vtduarte.pizzahub.dto.response.PizzaResponseDTO;
 import com.vtduarte.pizzahub.service.PizzaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,28 +19,28 @@ public class PizzaController {
 
     // CREATE
     @PostMapping
-    public ResponseEntity<PizzaEntity> cadastrarPizza(@Valid @RequestBody PizzaRequestDTO dto) {
-        PizzaEntity pizza = pizzaService.cadastrarPizza(dto);
+    public ResponseEntity<PizzaResponseDTO> cadastrarPizza(@Valid @RequestBody PizzaRequestDTO dto) {
+        PizzaResponseDTO pizza = pizzaService.cadastrarPizza(dto);
         return ResponseEntity.status(201).body(pizza);
     }
 
     // READ ALL
     @GetMapping
-    public ResponseEntity<List<PizzaEntity>> listarPizzas() {
+    public ResponseEntity<List<PizzaResponseDTO>> listarPizzas() {
         return ResponseEntity.ok(pizzaService.listarPizzas());
     }
 
     // READ BY ID
     @GetMapping("/{id}")
-    public ResponseEntity<PizzaEntity> buscarPizzaPorId(@PathVariable Long id) {
+    public ResponseEntity<PizzaResponseDTO> buscarPizzaPorId(@PathVariable Long id) {
         return ResponseEntity.ok(pizzaService.buscarPizzaPorId(id));
     }
 
     // UPDATE
     @PutMapping("/{id}")
-    public ResponseEntity<PizzaEntity> atualizarPizza(@PathVariable Long id,
+    public ResponseEntity<PizzaResponseDTO> atualizarPizza(@PathVariable Long id,
                                                       @Valid @RequestBody PizzaRequestDTO dto) {
-        PizzaEntity pizzaAtualizada = pizzaService.atualizarPizza(id, dto);
+        PizzaResponseDTO pizzaAtualizada = pizzaService.atualizarPizza(id, dto);
         return ResponseEntity.ok(pizzaAtualizada);
     }
 

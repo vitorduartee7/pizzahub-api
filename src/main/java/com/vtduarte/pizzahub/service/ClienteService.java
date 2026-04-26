@@ -6,10 +6,12 @@ import com.vtduarte.pizzahub.database.model.EnderecoEntity;
 import com.vtduarte.pizzahub.database.repository.ClienteRepository;
 import com.vtduarte.pizzahub.database.repository.EnderecoRepository;
 import com.vtduarte.pizzahub.dto.requests.ClienteRequestDTO;
+import com.vtduarte.pizzahub.dto.response.ClienteResponseDTO;
 import com.vtduarte.pizzahub.dto.response.ViaCepResponseDTO;
 import com.vtduarte.pizzahub.exceptions.BusinessException;
 import com.vtduarte.pizzahub.exceptions.InvalidCepException;
 import com.vtduarte.pizzahub.exceptions.ResourceNotFoundException;
+import com.vtduarte.pizzahub.mapper.ClienteMapper;
 import com.vtduarte.pizzahub.utils.FormatUtils;
 import com.vtduarte.pizzahub.utils.ValidationUtils;
 import jakarta.transaction.Transactional;
@@ -28,7 +30,7 @@ public class ClienteService {
 
     // CREATE
     @Transactional
-    public ClienteEntity cadastrarCliente(ClienteRequestDTO dto) {
+    public ClienteResponseDTO cadastrarCliente(ClienteRequestDTO dto) {
 
         // Formatar Dados
         String email = FormatUtils.formatarEmail(dto.getEmail());
@@ -54,26 +56,32 @@ public class ClienteService {
                 .build();
 
         // Salvar Cliente
-        return clienteRepository.save(cliente);
+        return ClienteMapper.toResponse(clienteRepository.save(cliente));
     }
 
     // READ ALL
-    public List<ClienteEntity> listarClientes() {
-        return clienteRepository.findAll();
+    public List<ClienteResponseDTO> listarClientes() {
+        return clienteRepository.findAll()
+                .stream()
+                .map(ClienteMapper::toResponse)
+                .toList();
     }
 
     // READ BY ID
-    public ClienteEntity buscarClientePorId(Long clienteId) {
-        return clienteRepository.findById(clienteId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado"));
+    public ClienteResponseDTO buscarClientePorId(Long id) {
+        ClienteEntity cliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
+
+        return ClienteMapper.toResponse(cliente);
     }
 
     // UPDATE
     @Transactional
-    public ClienteEntity atualizarCliente(Long clienteId, ClienteRequestDTO dto) {
+    public ClienteResponseDTO atualizarCliente(Long id, ClienteRequestDTO dto) {
 
         // Buscar Cliente
-        ClienteEntity cliente = buscarClientePorId(clienteId);
+        ClienteEntity cliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado"));
 
         // Formatar Dados
         String email = FormatUtils.formatarEmail(dto.getEmail());
@@ -81,7 +89,7 @@ public class ClienteService {
         String cep = FormatUtils.formatarCep(dto.getCep());
 
         // Validar Cliente
-        validarCliente(dto, email, telefone, cep,false, clienteId);
+        validarCliente(dto, email, telefone, cep,false, id);
 
         // Buscar Endereco no ViaCEP
         ViaCepResponseDTO cepResponseDTO = buscarEndereco(cep);
@@ -96,15 +104,16 @@ public class ClienteService {
         cliente.setTelefone(telefone);
         cliente.setEndereco(endereco);
 
-        return clienteRepository.save(cliente);
+        return ClienteMapper.toResponse(clienteRepository.save(cliente));
     }
 
     // DELETE
     @Transactional
-    public void deletarCliente(Long clienteId) {
+    public void deletarCliente(Long id) {
 
         // Buscar Cliente
-        ClienteEntity cliente = buscarClientePorId(clienteId);
+        ClienteEntity cliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado"));
 
         // Deletar Cliente
         clienteRepository.delete(cliente);
