@@ -2,6 +2,7 @@ package com.vtduarte.pizzahub.database.model;
 
 import com.vtduarte.pizzahub.database.enums.TamanhoPizzaEnum;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -35,6 +36,7 @@ public class ItemPedidoEntity {
     @Column(nullable = false)
     private Integer quantidade;
 
+    @Size(max = 255, message = "Obrsevação deve ter no máximo 255 caracteres")
     private String observacao;
 
     @Column(nullable = false)

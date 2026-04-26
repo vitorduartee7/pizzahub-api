@@ -6,8 +6,8 @@ import com.vtduarte.pizzahub.database.repository.ClienteRepository;
 import com.vtduarte.pizzahub.database.repository.ItemPedidoRepository;
 import com.vtduarte.pizzahub.database.repository.PedidoRepository;
 import com.vtduarte.pizzahub.database.repository.PizzaRepository;
-import com.vtduarte.pizzahub.dto.ItemPedidoRequestDTO;
-import com.vtduarte.pizzahub.dto.PedidoRequestDTO;
+import com.vtduarte.pizzahub.dto.requests.ItemPedidoRequestDTO;
+import com.vtduarte.pizzahub.dto.requests.PedidoRequestDTO;
 import com.vtduarte.pizzahub.exceptions.BusinessException;
 import com.vtduarte.pizzahub.exceptions.ResourceNotFoundException;
 import com.vtduarte.pizzahub.utils.PizzaPrecoUtils;
@@ -54,7 +54,7 @@ public class PedidoService {
 
             // Calcular Preço
             BigDecimal precoUnitario = PizzaPrecoUtils.aplicarTamanho(
-                    pizza.getPreco(),
+                    pizza.getPrecoBase(),
                     itemDTO.getTamanho()
             );
 
@@ -79,6 +79,14 @@ public class PedidoService {
             total = total.add(subtotal);
         }
 
+        // Evento inicial
+        StatusEvent eventoInicial = StatusEvent.builder()
+                .statusAntigo(null)
+                .statusNovo(StatusPedidoEnum.CRIADO)
+                .pedido(pedido)
+                .build();
+        pedido.getTimeline().add(eventoInicial);
+
         // Finalizar Pedido
         pedido.setItens(itens);
         pedido.setValorTotal(total);
@@ -90,7 +98,7 @@ public class PedidoService {
         return pedido;
     }
 
-    // READ ALL
+    // READ PEDIDOS
     public List<PedidoEntity> listarPedidos() {
         return pedidoRepository.findAll();
     }
@@ -101,9 +109,23 @@ public class PedidoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
     }
 
+    // READ BY STATUS
+    public List<PedidoEntity> listarPedidosPorStatus(StatusPedidoEnum status) {
+        return pedidoRepository.findByStatus(status);
+    }
+
+    // READ TIMELINE
+    public List<StatusEvent> mostrarTimeline(Long id) {
+
+        // Buscar Pedido
+        PedidoEntity pedido = buscarPedidoPorId(id);
+
+        return pedido.getTimeline();
+    }
+
     // UPDATE
     @Transactional
-    public PedidoEntity atualizarPedido(Long pedidoId, StatusPedidoEnum novoStatus) {
+    public PedidoEntity atualizarStatus(Long pedidoId, StatusPedidoEnum novoStatus) {
 
         // Buscar Pedido
         PedidoEntity pedido = buscarPedidoPorId(pedidoId);
@@ -118,6 +140,9 @@ public class PedidoService {
             );
         }
 
+        // Atualizar Status
+        pedido.setStatus(novoStatus);
+
         // Atualizar Log Status
         StatusEvent statusEvent = StatusEvent.builder()
                 .statusAntigo(statusAntigo)
@@ -125,13 +150,8 @@ public class PedidoService {
                 .pedido(pedido)
                 .build();
 
-        // Garantir Criação do StatusEvents
-        if (pedido.getStatusEvents() == null) {
-            pedido.setStatusEvents(new ArrayList<>());
-        }
-
         // Adicionar no Histórico
-        pedido.getStatusEvents().add(statusEvent);
+        pedido.getTimeline().add(statusEvent);
 
         return pedido;
     }

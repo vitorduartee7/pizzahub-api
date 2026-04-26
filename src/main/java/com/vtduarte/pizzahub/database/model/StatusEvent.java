@@ -17,7 +17,6 @@ public class StatusEvent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "status_event_id")
     private Long id;
 
     @Enumerated(EnumType.STRING)
@@ -31,6 +30,6 @@ public class StatusEvent {
     private LocalDateTime horario = LocalDateTime.now();
 
     @ManyToOne
-    @JoinColumn(name = "pedido_id", nullable = false)
+    @JoinColumn(name = "pedido_id")
     private PedidoEntity pedido;
 }

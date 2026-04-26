@@ -1,35 +1,23 @@
-package com.vtduarte.pizzahub.database.model;
+package com.vtduarte.pizzahub.dto.requests;
 
-import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.Data;
 
 import java.math.BigDecimal;
 
-@Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Table(name = "pizza")
-public class PizzaEntity {
+@Data
+public class PizzaRequestDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "pizza_id")
-    private Long id;
-
-    @Column(nullable = false, unique = true)
+    @NotBlank(message = "Nome é obrigatório")
     @Size(min = 3, max = 50, message = "Nome deve ter entre 3 e 50 caracteres")
     private String nome;
 
     @Size(max = 255, message = "Descrição deve ter no máximo 255 caracteres")
     private String descricao;
 
-    @Column(nullable = false)
+    @NotBlank(message = "Preço Base é obrigatório")
     @DecimalMin(value = "0.01", message = "Preço deve ser maior que zero")
     private BigDecimal precoBase;
-
-    private boolean disponivel = true;
 }

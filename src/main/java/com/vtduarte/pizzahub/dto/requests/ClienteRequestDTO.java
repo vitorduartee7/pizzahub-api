@@ -1,14 +1,16 @@
-package com.vtduarte.pizzahub.dto;
+package com.vtduarte.pizzahub.dto.requests;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
 public class ClienteRequestDTO {
 
     @NotBlank(message = "Nome é obrigatório")
+    @Size(min = 3, max = 50, message = "Nome deve ter entre 3 e 50 caracteres")
     private String nome;
 
     @NotBlank(message = "Email é obrigatório")

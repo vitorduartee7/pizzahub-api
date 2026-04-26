@@ -1,6 +1,7 @@
 package com.vtduarte.pizzahub.database.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Entity
@@ -18,12 +19,14 @@ public class ClienteEntity {
     private Long id;
 
     @Column(nullable = false)
+    @Size(min = 3, max = 50, message = "Nome deve ter entre 3 e 50 caracteres")
     private String nome;
 
     @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false, unique = true)
+    @Size(min = 10, max = 11, message = "Telefone deve ter 10 ou 11 caracteres")
     private String telefone;
 
     @ManyToOne

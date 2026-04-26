@@ -1,4 +1,4 @@
-package com.vtduarte.pizzahub.dto;
+package com.vtduarte.pizzahub.dto.requests;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;

@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -42,8 +43,9 @@ public class PedidoEntity {
     private ClienteEntity cliente;
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ItemPedidoEntity> itens;
+    private List<ItemPedidoEntity> itens = new ArrayList<>();
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<StatusEvent> statusEvents;
+    @OrderBy("horario ASC")
+    private List<StatusEvent> timeline = new ArrayList<>();
 }
