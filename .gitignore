@@ -1,0 +1,52 @@
+# 🧱 Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# ☕ Java
+*.class
+
+# 🧠 IntelliJ
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# 🖥️ VS Code
+.vscode/
+
+# 🐧 Linux / Mac / Windows
+.DS_Store
+Thumbs.db
+
+# 🔐 Logs
+*.log
+
+# ⚙️ Arquivos de build
+build/
+
+# 🧪 H2 Database (se usar arquivo)
+*.mv.db
+*.trace.db
+
+# 🔒 Env / configs sensíveis
+.env
+application-local.properties
+application-dev.properties
+
+HELP.md
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+#
+!**/src/main/**/build/
+!**/src/test/**/build/
+!**/src/main/**/target/
+!**/src/test/**/target/
