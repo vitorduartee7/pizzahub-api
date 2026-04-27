@@ -24,14 +24,11 @@ public class PedidoMapper {
         PedidoResponseDTO dto = new PedidoResponseDTO();
 
         dto.setId(pedido.getId());
-        dto.setDataPedido(
-                LocalDateTime.parse(pedido.getDataPedido()
-                        .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")))
-        );
+        dto.setDataPedido(pedido.getDataPedido());
         dto.setStatus(pedido.getStatus());
         dto.setTempoEstimado(pedido.getTempoEstimado());
 
-        dto.setValorPedido(pedido.getValorTotal());
+        dto.setValorPedido(pedido.getValorPedido());
         dto.setValorEntrega(pedido.getValorEntrega());
         dto.setValorTotal(pedido.getValorTotal());
 

@@ -48,8 +48,8 @@ public class PedidoService {
                 .itens(new ArrayList<>())
                 .build();
 
-        if (pedido.getTimeline() == null) {
-            pedido.setTimeline(new ArrayList<>());
+        if (pedido.getItens() == null) {
+            pedido.setItens(new ArrayList<>());
         }
 
         if (pedido.getTimeline() == null) {
