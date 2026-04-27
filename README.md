@@ -2,7 +2,11 @@
 
 ## 📌 Descrição
 
-API REST para gerenciamento de pedidos de pizzaria, com cálculo automático de valores, controle de status e timeline.
+API REST para gerenciamento de pedidos de pizzaria, com controle de clientes, pizzas e pedidos.
+
+A aplicação realiza cálculo automático de valores, valida regras de negócio, gerencia o fluxo de status e mantém um histórico completo do pedido por meio de uma timeline.
+
+Construída com boas práticas de arquitetura, uso de DTOs, tratamento global de erros e documentação interativa via Swagger.
 
 ---
 
