@@ -1,5 +1,6 @@
 package com.vtduarte.pizzahub.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.vtduarte.pizzahub.database.enums.StatusPedidoEnum;
 import lombok.Data;
 
@@ -12,6 +13,7 @@ public class PedidoResponseDTO {
 
     private Long id;
 
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     private LocalDateTime dataPedido;
 
     private StatusPedidoEnum status;
