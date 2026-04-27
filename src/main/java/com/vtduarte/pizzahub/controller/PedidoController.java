@@ -1,9 +1,9 @@
 package com.vtduarte.pizzahub.controller;
 
 import com.vtduarte.pizzahub.database.enums.StatusPedidoEnum;
-import com.vtduarte.pizzahub.database.model.StatusEvent;
 import com.vtduarte.pizzahub.dto.requests.PedidoRequestDTO;
 import com.vtduarte.pizzahub.dto.response.PedidoResponseDTO;
+import com.vtduarte.pizzahub.dto.response.StatusEventResponseDTO;
 import com.vtduarte.pizzahub.service.PedidoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -52,7 +52,7 @@ public class PedidoController {
 
     // READ TIMELINE
     @GetMapping("/{id}/timeline")
-    public ResponseEntity<List<StatusEvent>> mostrarTimeline(
+    public ResponseEntity<List<StatusEventResponseDTO>> mostrarTimeline(
             @PathVariable Long id
     ) {
         return ResponseEntity.ok(pedidoService.mostrarTimeline(id));

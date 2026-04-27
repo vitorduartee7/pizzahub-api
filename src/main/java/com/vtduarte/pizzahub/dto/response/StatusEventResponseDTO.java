@@ -2,11 +2,13 @@ package com.vtduarte.pizzahub.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.vtduarte.pizzahub.database.enums.StatusPedidoEnum;
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
+@Builder
 public class StatusEventResponseDTO {
 
     private StatusPedidoEnum statusAntigo;

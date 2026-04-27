@@ -9,9 +9,11 @@ import com.vtduarte.pizzahub.database.repository.PizzaRepository;
 import com.vtduarte.pizzahub.dto.requests.ItemPedidoRequestDTO;
 import com.vtduarte.pizzahub.dto.requests.PedidoRequestDTO;
 import com.vtduarte.pizzahub.dto.response.PedidoResponseDTO;
+import com.vtduarte.pizzahub.dto.response.StatusEventResponseDTO;
 import com.vtduarte.pizzahub.exceptions.BusinessException;
 import com.vtduarte.pizzahub.exceptions.ResourceNotFoundException;
 import com.vtduarte.pizzahub.mapper.PedidoMapper;
+import com.vtduarte.pizzahub.mapper.StatusEventMapper;
 import com.vtduarte.pizzahub.utils.PizzaPrecoUtils;
 import com.vtduarte.pizzahub.utils.TempoPedidoUtils;
 import jakarta.transaction.Transactional;
@@ -65,6 +67,11 @@ public class PedidoService {
             // Buscar Pizza
             PizzaEntity pizza = pizzaRepository.findById(itemDTO.getPizzaId())
                     .orElseThrow(() -> new ResourceNotFoundException("Pizza não encontrada"));
+
+            // Validar Disponibilidade
+            if (!pizza.isDisponivel()) {
+                throw new BusinessException("Pizza indisponível: " + pizza.getNome());
+            }
 
             // Calcular Preço
             BigDecimal precoUnitario = PizzaPrecoUtils.aplicarTamanho(
@@ -141,19 +148,19 @@ public class PedidoService {
     }
 
     // READ TIMELINE
-    public List<StatusEvent> mostrarTimeline(Long id) {
+    public List<StatusEventResponseDTO> mostrarTimeline(Long id) {
 
         PedidoEntity pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
 
-        if (pedido.getTimeline() == null) {
-            return List.of();
-        }
-
-        return pedido.getTimeline();
+        return pedido.getTimeline()
+                .stream()
+                .map(StatusEventMapper::toDTO)
+                .toList();
     }
 
     // UPDATE
+    @Transactional
     public PedidoResponseDTO atualizarStatus(Long pedidoId, StatusPedidoEnum novoStatus) {
 
         // Buscar Cliente e Validar Cliente
@@ -182,6 +189,8 @@ public class PedidoService {
         }
 
         pedido.getTimeline().add(evento);
+
+        pedidoRepository.save(pedido);
 
         return PedidoMapper.toResponse(pedido);
     }

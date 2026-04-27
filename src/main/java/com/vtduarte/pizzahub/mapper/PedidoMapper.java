@@ -9,8 +9,6 @@ import com.vtduarte.pizzahub.dto.response.ItemPedidoResponseDTO;
 import com.vtduarte.pizzahub.dto.response.PedidoResponseDTO;
 import com.vtduarte.pizzahub.dto.response.StatusEventResponseDTO;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -80,15 +78,12 @@ public class PedidoMapper {
         }
 
         return timeline.stream()
-                .map(event -> {
-                    StatusEventResponseDTO dto = new StatusEventResponseDTO();
-
-                    dto.setStatusAntigo(event.getStatusAntigo());
-                    dto.setStatusNovo(event.getStatusNovo());
-                    dto.setHorario(event.getHorario());
-
-                    return dto;
-                })
+                .map(event -> StatusEventResponseDTO.builder()
+                        .statusAntigo(event.getStatusAntigo())
+                        .statusNovo(event.getStatusNovo())
+                        .horario(event.getHorario())
+                        .build()
+                )
                 .collect(Collectors.toList());
     }
 }
